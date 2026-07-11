@@ -14,6 +14,8 @@
   <a href="#install"><img src="https://img.shields.io/badge/Claude_Code-plugin-0a0a0a?style=flat-square" alt="Claude Code plugin"></a>
   <a href="https://modelcontextprotocol.io"><img src="https://img.shields.io/badge/MCP-streamable_http-0a0a0a?style=flat-square" alt="MCP"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/licence-Apache--2.0-0a0a0a?style=flat-square" alt="Apache-2.0"></a>
+  <a href="https://discord.gg/HVXjkCxgcj"><img src="https://img.shields.io/badge/Discord-join-0a0a0a?style=flat-square&logo=discord&logoColor=white" alt="Discord"></a>
+  <a href="https://x.com/fons_vc"><img src="https://img.shields.io/badge/X-@fons__vc-0a0a0a?style=flat-square&logo=x&logoColor=white" alt="X"></a>
 </p>
 
 ---
@@ -36,6 +38,7 @@ and does not live here. What lives here is everything you need to *talk to it*.
 - [What it deliberately cannot do](#what-it-deliberately-cannot-do)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
+- [Follow us](#follow-us)
 - [Security](#security)
 - [Licence](#licence)
 
@@ -331,6 +334,15 @@ a bad instruction, that's a bug worth reporting. See [CONTRIBUTING.md](CONTRIBUT
 
 Note that `SKILL.md`, `references/` and `cli/` are generated from the Fons monorepo — we accept
 patches here and land them upstream.
+
+## Follow us
+
+- **Discord** — [discord.gg/HVXjkCxgcj](https://discord.gg/HVXjkCxgcj). Where we talk about what
+  agents should and shouldn't be trusted to do with a company's own data. Bring the transcript
+  where your agent got it wrong; that's the useful conversation.
+- **X** — [@fons_vc](https://x.com/fons_vc).
+- **Web** — [fons.vc](https://fons.vc). Every public profile there has a `.md` twin, including
+  [ours](https://fons.vc/c/fons-vc.md).
 
 ## Security
 
