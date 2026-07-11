@@ -1,0 +1,16 @@
+{
+  "name": "fons",
+  "displayName": "Fons",
+  "version": "1.0.0",
+  "description": "Read and update your Fons (fons.vc) founder profile, company, product, key metrics, data room and verified connections — through the Fons MCP server, with OAuth in your browser and no credential in the chat.",
+  "author": {
+    "name": "Fons",
+    "email": "admin@fons.vc",
+    "url": "https://fons.vc"
+  },
+  "homepage": "https://fons.vc",
+  "repository": "https://github.com/fons-vc/fons",
+  "license": "Apache-2.0",
+  "keywords": ["fons", "profile", "company", "product", "data-room", "investment-ready", "mcp", "founder", "investor"],
+  "mcpServers": "./.mcp.json"
+}

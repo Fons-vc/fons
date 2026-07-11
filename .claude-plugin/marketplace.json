@@ -1,0 +1,24 @@
+{
+  "name": "fons",
+  "owner": {
+    "name": "Fons",
+    "email": "admin@fons.vc",
+    "url": "https://fons.vc"
+  },
+  "metadata": {
+    "description": "The Fons agent surface — read and update your founder profile, company, product, metrics and data room from your AI assistant.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "fons",
+      "source": "./plugins/fons",
+      "description": "Read and update your Fons (fons.vc) profile, company, product, key metrics, data room and verified connections from your agent. Bundles the Fons MCP server — OAuth in the browser, no credential in the chat.",
+      "version": "1.0.0",
+      "author": { "name": "Fons", "url": "https://fons.vc" },
+      "homepage": "https://fons.vc",
+      "license": "Apache-2.0",
+      "keywords": ["fons", "profile", "company", "investment-ready", "data-room", "mcp", "founder"]
+    }
+  ]
+}

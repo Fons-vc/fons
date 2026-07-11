@@ -1,0 +1,31 @@
+Fons — agent surface (Skill, MCP wiring, CLI)
+Copyright 2026 Fons
+
+This product includes software developed at Fons (https://fons.vc).
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed
+under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
+CONDITIONS OF ANY KIND, either express or implied. See the License for the
+specific language governing permissions and limitations under the License.
+
+TRADEMARKS
+----------
+"Fons", the Fons logo (the dodecahedral mark), and fons.vc are trademarks of
+Fons. Section 6 of the Apache License grants no trademark rights, and none are
+granted here: you may fork, modify and redistribute this software, but a
+derivative work must not be presented as Fons, must not use the Fons name or
+mark to endorse or promote itself, and must make clear that it is not the
+official Fons agent surface.
+
+This matters more than usual for this particular repository. The software here
+instructs an AI agent to read and write a founder's own company data on their
+behalf. A modified copy passing itself off as the official Fons skill would be
+asking for a user's trust under our name — so the trademark line is the one
+boundary we hold firmly, and the only thing this licence asks of you in return
+for everything else.

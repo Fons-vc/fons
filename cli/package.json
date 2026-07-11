@@ -1,0 +1,15 @@
+{
+  "name": "fons-cli",
+  "version": "0.1.3",
+  "description": "Fons CLI — manage your Fons profile from the terminal (OAuth + /api/v1).",
+  "type": "module",
+  "bin": { "fons": "bin/fons.js" },
+  "files": ["bin", "src", "README.md"],
+  "engines": { "node": ">=18" },
+  "homepage": "https://fons.vc",
+  "repository": { "type": "git", "url": "git+https://github.com/fons-vc/fons.git", "directory": "cli" },
+  "bugs": { "url": "https://github.com/fons-vc/fons/issues", "email": "admin@fons.vc" },
+  "keywords": ["fons", "cli", "profile", "company", "mcp", "oauth", "agentic", "founders"],
+  "license": "Apache-2.0",
+  "publishConfig": { "access": "public" }
+}
