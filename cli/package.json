@@ -1,10 +1,10 @@
 {
   "name": "fons-cli",
-  "version": "0.1.3",
-  "description": "Fons CLI — manage your Fons profile from the terminal (OAuth + /api/v1).",
+  "version": "1.0.0",
+  "description": "Fons CLI — read and update your Fons profile, company, product, metrics and data room from the terminal. OAuth in the browser; no token ever pasted.",
   "type": "module",
   "bin": { "fons": "bin/fons.js" },
-  "files": ["bin", "src", "README.md"],
+  "files": ["bin", "src", "README.md", "LICENSE", "NOTICE"],
   "engines": { "node": ">=18" },
   "homepage": "https://fons.vc",
   "repository": { "type": "git", "url": "git+https://github.com/fons-vc/fons.git", "directory": "cli" },

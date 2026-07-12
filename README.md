@@ -256,7 +256,7 @@ refuse it and tell you to rotate it.
 ## The CLI
 
 ```bash
-curl -fsSL https://fons.vc/install.sh | sh    # installs the `fons` command (needs Node 18+)
+npm install -g fons-cli     # or: curl -fsSL https://fons.vc/install.sh | sh   (Node 18+)
 
 fons login                  # OAuth, same browser consent, no tokens to copy
 fons profile get

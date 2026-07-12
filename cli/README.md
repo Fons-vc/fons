@@ -8,14 +8,16 @@ resource API — every request is scoped to **you** by Row-Level Security.
 ## Install
 
 ```bash
+npm install -g fons-cli
+```
+
+Or, if you'd rather not go through npm:
+
+```bash
 curl -fsSL https://fons.vc/install.sh | sh
 ```
 
-Or install directly with npm from the hosted tarball (no npm account needed):
-
-```bash
-npm install -g https://fons.vc/cli/fons-cli.tgz
-```
+Needs Node 18+. Zero runtime dependencies.
 
 Or from a checkout of this repo: `cd cli && npm link`.
 
