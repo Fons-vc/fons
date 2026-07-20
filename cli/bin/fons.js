@@ -555,7 +555,7 @@ async function cmdCalendar(args) {
   if (data.venue) process.stdout.write(`Venue: ${data.venue.url}\n`);
   if (data.error) process.stdout.write(`${data.error}\n`);
   const slots = data.offered_slots || [];
-  if (!data.calendar_connected) process.stdout.write("No offered slots without a connected calendar — connect at https://fons.vc/calendar\n");
+  if (!data.calendar_connected) process.stdout.write("No offered slots without a connected calendar — connect at https://fons.vc/calendar/settings\n");
   else if (!slots.length) process.stdout.write("No free slots inside your working hours in this window.\n");
   else for (const s of slots.slice(0, 40)) process.stdout.write(`  ${fmtWhen(s.start)}\n`);
 }
@@ -692,7 +692,7 @@ Usage:
   fons availability <handle>         A member's offered call slots (opt-in only;
       [--days <n>]                    mutual intersection when your calendar is connected)
   fons calendar [--days <n>]         Your own calendar state + offered slots
-                                     (connect/settings live at fons.vc/calendar)
+                                     (connect/settings live at fons.vc/calendar/settings)
   fons call request <handle> --at <ISO time>   Send a call invite (Fons relays it —
       [--at <t> …] [--message "…"]             no contact details exchanged; 30-min slots;
                                                up to 5 --at proposals; caps: Free 4/mo,

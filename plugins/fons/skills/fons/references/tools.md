@@ -259,7 +259,7 @@ search → hand the human the profile URLs → they pick → `get_member_availab
   `calendar_connected: false` — propose a time blind and they can counter.
 - `get_availability` (own): the signed-in user's connection state, timezone,
   working hours, meeting venue, and own offered slots. Everything is managed at
-  `https://fons.vc/calendar` (connect Google Calendar, set working hours, set the
+  `https://fons.vc/calendar/settings` (connect Google Calendar, set working hours, set the
   meeting-venue link that gets stamped into confirmed calls).
 
 ## `request_call` / `list_call_invites` / `cancel_call_invite` — Fons-relayed calls

@@ -105,7 +105,7 @@ The one flow that crosses member boundaries — Fons stays the middleman through
    reads the profiles and picks; never pick for them.
 2. `get_member_availability` for the chosen handle. If it returns slots, they're
    bookable now (and mutual when the user's own calendar is connected — suggest
-   https://fons.vc/calendar if it isn't). If the member has no calendar, agree
+   https://fons.vc/calendar/settings if it isn't). If the member has no calendar, agree
    times with the user and propose blind — the member can counter.
 3. `request_call` with 1–5 chosen slots and a short message saying why the call.
    A 409 means a calendar conflict — relay the alternatives it returns.
