@@ -108,8 +108,14 @@ async function cmdProfileGet(args) {
   line("headline", p.headline);
   line("location", p.location);
   line("bio", p.bio);
-  line("tags", p.tags);
+  line("sectors", p.sectors);   // closed vocab, ≤3 (0157)
+  line("skills", p.skills);     // open vocab, ≤12 (0157)
   line("open to", p.open_to);
+  // the headline status (0154/0156) — promoted action, freehand note, or both
+  line("status", p.primary_status ? p.primary_status + (p.status_note ? ` — ${p.status_note}` : "") : (p.status_note || ""));
+  // Display links: "label: url — description" (description optional, 0150 era).
+  const lks = Array.isArray(p.links) ? p.links : [];
+  line("links", lks.map((k) => (k.label ? `${k.label}: ${k.url}` : k.url) + (k.description ? ` — ${k.description}` : "")).filter(Boolean));
   // FAQ is an ordered list of {q, a}; show the questions so `get` reflects what's set.
   const faq = Array.isArray(p.faq) ? p.faq : [];
   line("faq", faq.map((f) => (f && f.q) || "").filter(Boolean));
@@ -138,8 +144,13 @@ async function cmdProfileSet(args) {
   if (typeof args.linkedin === "string") patch.linkedin = args.linkedin;
   if (typeof args.youtube === "string") patch.youtube = args.youtube;
   if (typeof args.visibility === "string") patch.visibility = args.visibility;
-  if (args.tag !== undefined) patch.tags = arr(args.tag);
+  if (args.sector !== undefined) patch.sectors = arr(args.sector);   // ≤3 directory sector slugs
+  if (args.skill !== undefined) patch.skills = arr(args.skill);      // ≤12 free-text skills
   if (args["open-to"] !== undefined) patch.open_to = arr(args["open-to"]);
+  // The headline status (0154): one open_to value promoted to the top of the page;
+  // "" clears it. Server-coerced to null unless it's in the open_to list.
+  if (typeof args.status === "string") patch.primary_status = args.status;
+  if (typeof args["status-note"] === "string") patch.status_note = args["status-note"];
   // Structured fields take JSON so the shape stays explicit (the server re-validates).
   if (args["current-role-json"] !== undefined) patch.current_role = parseJsonFlag(args["current-role-json"], "--current-role-json");
   if (args["job-history-json"] !== undefined) patch.job_history = parseJsonFlag(args["job-history-json"], "--job-history-json");
@@ -148,7 +159,7 @@ async function cmdProfileSet(args) {
   if (args["certifications-json"] !== undefined) patch.certifications = parseJsonFlag(args["certifications-json"], "--certifications-json");
   if (args["field-visibility-json"] !== undefined) patch.field_visibility = parseJsonFlag(args["field-visibility-json"], "--field-visibility-json");
   if (!Object.keys(patch).length) {
-    fail("nothing to set. Try --headline, --bio, --location, --name, --linkedin, --youtube, --visibility, --tag, --open-to, or a --*-json flag (see `fons help`).");
+    fail("nothing to set. Try --headline, --bio, --location, --name, --linkedin, --youtube, --visibility, --sector, --skill, --open-to, or a --*-json flag (see `fons help`).");
   }
   await apiFetch("/api/v1/profile", { method: "PATCH", body: patch });
   process.stdout.write(`Updated: ${Object.keys(patch).join(", ")}.\n`);
@@ -380,8 +391,8 @@ async function cmdCompanySet(args) {
   const out = await apiFetch("/api/v1/company", { method: "PATCH", body });
   const c = (out && out.company) || {};
   process.stdout.write(`Updated: ${Object.keys(patch).join(", ")}${c.name ? ` on ${c.name}` : ""}.\n`);
-  if (patch.name || patch.website || patch["company_number"]) {
-    process.stdout.write("Note: changing the name/website/company number voids the matching verification badge — re-verify on https://fons.vc/company.\n");
+  if (patch.website || patch["company_number"]) {
+    process.stdout.write("Note: changing the website/company number voids the matching verification badge — re-verify on https://fons.vc/company.\n");
   }
 }
 
@@ -510,6 +521,106 @@ async function cmdDisconnect(args) {
   process.stdout.write(`Disconnected ${provider} — its ✓ has been removed from your profile.\n`);
 }
 
+/* ---- NET-3: member search + call invites (the network loop) ---------------- */
+
+const fmtWhen = (iso) => {
+  const t = Date.parse(iso || "");
+  return Number.isFinite(t) ? new Date(t).toLocaleString() : String(iso || "");
+};
+
+async function cmdSearch(args) {
+  const qs = new URLSearchParams();
+  if (args._[1] && typeof args._[1] === "string") qs.set("q", args._[1]);
+  if (typeof args.q === "string") qs.set("q", args.q);
+  for (const v of arr(args["open-to"]) || []) qs.append("open_to", v);
+  for (const v of arr(args.sector) || []) qs.append("sector", v);
+  if (typeof args.location === "string") qs.set("location", args.location);
+  if (typeof args.limit === "string") qs.set("limit", args.limit);
+  const data = await apiFetch(`/api/v1/search/profiles?${qs.toString()}`);
+  if (args.json) { process.stdout.write(JSON.stringify(data, null, 2) + "\n"); return; }
+  const rows = data.profiles || [];
+  if (!rows.length) { process.stdout.write("No members matched — loosen the filters.\n"); return; }
+  for (const p of rows) {
+    const bits = [p.headline, p.location, (p.open_to || []).join(", ")].filter(Boolean).join(" · ");
+    process.stdout.write(`@${p.handle}  ${p.name}${p.invitable ? "  [invitable]" : ""}\n`);
+    if (bits) process.stdout.write(`  ${bits}\n`);
+    process.stdout.write(`  ${p.profile_url}\n`);
+  }
+}
+
+async function cmdCalendar(args) {
+  const data = await apiFetch(`/api/v1/calendar${typeof args.days === "string" ? `?days=${encodeURIComponent(args.days)}` : ""}`);
+  if (args.json) { process.stdout.write(JSON.stringify(data, null, 2) + "\n"); return; }
+  process.stdout.write(`Calendar: ${data.calendar_connected ? "connected" : "not connected"} · timezone ${data.timezone}\n`);
+  if (data.venue) process.stdout.write(`Venue: ${data.venue.url}\n`);
+  if (data.error) process.stdout.write(`${data.error}\n`);
+  const slots = data.offered_slots || [];
+  if (!data.calendar_connected) process.stdout.write("No offered slots without a connected calendar — connect at https://fons.vc/calendar\n");
+  else if (!slots.length) process.stdout.write("No free slots inside your working hours in this window.\n");
+  else for (const s of slots.slice(0, 40)) process.stdout.write(`  ${fmtWhen(s.start)}\n`);
+}
+
+async function cmdAvailability(args) {
+  const handle = (args._[1] || "").toString().trim().replace(/^@/, "");
+  if (!handle) fail("whose availability? Try: fons availability <handle>");
+  const qs = typeof args.days === "string" ? `?days=${encodeURIComponent(args.days)}` : "";
+  const data = await apiFetch(`/api/v1/members/${encodeURIComponent(handle)}/availability${qs}`);
+  if (args.json) { process.stdout.write(JSON.stringify(data, null, 2) + "\n"); return; }
+  if (!data.calendar_connected) {
+    process.stdout.write(`@${data.handle} has no calendar connected — propose a time blind with \`fons call request\` and they can counter.\n`);
+    return;
+  }
+  process.stdout.write(`Offered slots for @${data.handle} (${data.timezone})${data.mutual ? " — mutual with your calendar" : ""}:\n`);
+  for (const s of (data.slots || []).slice(0, 40)) process.stdout.write(`  ${s.start}  (${fmtWhen(s.start)})\n`);
+  if (!(data.slots || []).length) process.stdout.write("  (none in this window)\n");
+}
+
+async function cmdCallRequest(args) {
+  const handle = (args._[2] || "").toString().trim().replace(/^@/, "");
+  if (!handle) fail("who? Try: fons call request <handle> --at <ISO time> [--message \"…\"]");
+  const ats = arr(args.at);
+  if (!ats || !ats.length) fail("when? Pass --at <ISO time> (repeatable, up to 5) — pick from `fons availability <handle>`.");
+  const slots = ats.map((t) => {
+    const ms = Date.parse(t);
+    if (!Number.isFinite(ms)) fail(`--at "${t}" isn't a valid time. Use ISO 8601, e.g. 2026-07-22T10:00:00Z.`);
+    return { start: new Date(ms).toISOString(), end: new Date(ms + 30 * 60 * 1000).toISOString() };
+  });
+  const body = { handle, slots };
+  if (typeof args.message === "string") body.message = args.message;
+  if (typeof args.timezone === "string") body.timezone = args.timezone;
+  const data = await apiFetch("/api/v1/calls", { method: "POST", body });
+  const inv = data.invite;
+  process.stdout.write(`Invite sent to ${inv.counterparty.name} — ${inv.status}, expires ${fmtWhen(inv.expires_at)}.\n`);
+  process.stdout.write(`Track it with \`fons call list\` (id: ${inv.id}).\n`);
+}
+
+async function cmdCallList(args) {
+  const dir = typeof args.direction === "string" ? args.direction : "all";
+  const data = await apiFetch(`/api/v1/calls?direction=${encodeURIComponent(dir)}`);
+  if (args.json) { process.stdout.write(JSON.stringify(data, null, 2) + "\n"); return; }
+  const rows = data.invites || [];
+  if (!rows.length) { process.stdout.write("No call invites yet — `fons search --open-to intro-calls` to find members.\n"); return; }
+  for (const i of rows) {
+    const other = `${i.counterparty.name}${i.counterparty.handle ? ` (@${i.counterparty.handle})` : ""}`;
+    process.stdout.write(`${i.id}  ${i.direction === "sent" ? "→" : "←"} ${other}  [${i.status}]\n`);
+    if (i.status === "accepted" && i.chosen_slot) {
+      process.stdout.write(`    Confirmed: ${fmtWhen(i.chosen_slot.start)}${i.venue_url ? ` · ${i.venue_url}` : ""}\n`);
+      if (i.ics_url) process.stdout.write(`    .ics: https://fons.vc${i.ics_url}\n`);
+    } else if (i.status === "pending") {
+      process.stdout.write(`    Proposed: ${(i.proposed_slots || []).map((s) => fmtWhen(s.start)).join(" · ")}\n`);
+    } else if (i.status === "proposed_new_time") {
+      process.stdout.write(`    Counter-proposed: ${(i.counter_slots || []).map((s) => fmtWhen(s.start)).join(" · ")}\n`);
+    }
+  }
+}
+
+async function cmdCallCancel(args) {
+  const id = (args._[2] || "").toString().trim();
+  if (!id) fail("which invite? Try: fons call cancel <id> (ids from `fons call list`).");
+  await apiFetch(`/api/v1/calls/${encodeURIComponent(id)}/cancel`, { method: "POST" });
+  process.stdout.write(`Invite ${id} cancelled.\n`);
+}
+
 const HELP = `fons — manage your Fons profile from the terminal
 
 Usage:
@@ -522,11 +633,15 @@ Usage:
   fons profile set [flags]           Update fields:
       --name <s>  --headline <s>  --bio <s>  --location <s>  --linkedin <url>  --youtube <url>
       --visibility <public|unlisted|private>
-      --tag <t>        (repeat for multiple)
-      --open-to <o>    (repeat: hiring|looking-for-work|raising|co-founder|advising|investing)
+      --sector <s>     (repeat, max 3 — directory sector slugs, e.g. financial_services)
+      --skill <s>      (repeat, max 12 — free text, e.g. "Product management")
+      --open-to <o>    (repeat: looking-for-work|hiring|raising|investing|co-founder|advising|
+                        mentoring|looking-for-mentor|freelance|board-roles|speaking)
+      --status <o>       the ONE open-to value shown as the headline status at the top of the page ("" clears)
+      --status-note <s>  one-line status in your own words (max 80 chars) — works with --status or alone
       --current-role-json '[{"title":"Founder","company":"Acme","start":"2024-01"}]'
       --job-history-json  '[{"title":"PM","company":"X","start":"2020","end":"2023"}]'
-      --links-json        '[{"label":"Site","url":"https://example.com"}]'
+      --links-json        '[{"label":"Site","url":"https://example.com","description":"Optional one-line context"}]'
       --faq-json          '[{"q":"What are you building?","a":"…"}]'  (ordered, max 10)
       --certifications-json '[{"slug":"cspo","credential_id":"1453839","issued":"2021-09","url":"https://…"}]'
                           (max 40; use {"slug":"other","name":"…","issuer":"…"} for anything not in the catalogue)
@@ -539,7 +654,7 @@ Usage:
       --founded <yyyy>  --team-size <n>  --entity <s>  --company-number <s>  --address <s>
       --links-json '[{"label":"Docs","url":"https://…"}]' (≤6)
       --connections-json / --certifications-json / --grants-json  (replace whole list)
-      (changing name/website/company number voids the matching verification badge)
+      (changing website/company number voids the matching verification badge; name is badge-safe)
   fons metrics [--json]              List the company's key metrics (with provenance)
   fons metric set --key <k> --value <n> [--unit <s>] [--period <s>] [--visibility public|gated|private] [--source <s>]
   fons metric rm --key <k>           Remove a metric (connector-managed rows refuse)
@@ -570,6 +685,20 @@ Usage:
   fons disconnect <provider>         Remove a verified connection
       providers: linkedin, github, x, twitch, discord, youtube
       (disconnect: youtube is managed on fons.vc)
+  fons search [<q>] [flags]          Find members (public, listed profiles only):
+      --open-to <o>    (repeat — e.g. intro-calls, raising, investing)
+      --sector <s>     (repeat — directory sector slugs)
+      --location <s>   --limit <n>   --json
+  fons availability <handle>         A member's offered call slots (opt-in only;
+      [--days <n>]                    mutual intersection when your calendar is connected)
+  fons calendar [--days <n>]         Your own calendar state + offered slots
+                                     (connect/settings live at fons.vc/calendar)
+  fons call request <handle> --at <ISO time>   Send a call invite (Fons relays it —
+      [--at <t> …] [--message "…"]             no contact details exchanged; 30-min slots;
+                                               up to 5 --at proposals; caps: Free 4/mo,
+                                               Plus 20/mo, Investor uncapped)
+  fons call list [--direction sent|received] [--json]   Track invite status
+  fons call cancel <id>              Cancel a pending invite you sent
 
 Env: FONS_BASE (default https://fons.vc) · FONS_CONFIG_DIR · FONS_CLI_PORT
 `;
@@ -615,6 +744,15 @@ async function main() {
       return await cmdConnectors(args);
     }
     if (cmd === "readiness") return await cmdReadiness(args);
+    if (cmd === "search") return await cmdSearch(args);
+    if (cmd === "availability") return await cmdAvailability(args);
+    if (cmd === "calendar") return await cmdCalendar(args);
+    if (cmd === "call") {
+      if (sub === "request") return await cmdCallRequest(args);
+      if (sub === "cancel") return await cmdCallCancel(args);
+      if (!sub || sub === "list") return await cmdCallList(args);
+      return fail("unknown call command. Try `fons call request`, `fons call list`, or `fons call cancel`.");
+    }
     if (cmd === "connections") return await cmdConnections();
     if (cmd === "connect") return await cmdConnect(args);
     if (cmd === "disconnect") return await cmdDisconnect(args);

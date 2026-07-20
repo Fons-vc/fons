@@ -25,11 +25,12 @@ Two rules, and they matter more than the table:
 | `#name` | Your details, cursor on **full name** |
 | `#handle` | Your details, cursor on **handle** (choosing your own needs Fons Pro) |
 | `#headline` | Your details, cursor on **headline** |
-| `#about` (or `#bio`) | Your details, cursor on **About** |
+| `#about` (or `#bio`) | The About editor — bio + the open-to ticks |
+| `#status` | Status — the ONE promoted open-to signal + its one-line note |
 | `#location` | Your details, cursor on **location** |
 | `#career` | Career — current role and job history |
 | `#jobs` | Career, cursor on **add a past role** |
-| `#expertise` | Expertise & status — focus areas, what they're open to |
+| `#expertise` | Expertise — sectors worked in (≤3) + skills (typeahead, free text allowed) |
 | `#faq` | FAQ — their own Q&A block |
 | `#credentials` | Credentials — certifications |
 | `#connections` | Connections — the verified-account rail |
@@ -43,16 +44,36 @@ Two rules, and they matter more than the table:
 | Fragment | Opens |
 |---|---|
 | `#details` | Details — identity, narrative, sector/stage/location, links |
-| `#metrics` | Key Metrics — the numbers, and the connectors that verify them |
-| `#documents` (or `#dataroom`) | Data room — the diligence document slots (**upload is browser-only**) |
 | `#team` | Team — headcount evidence, the member roster, and invites |
-| `#legal` | Legal & admin — entity, company number, incorporation, accreditations |
 | `#connections` | Connections — company data sources and platform profiles |
 | `#visibility` | Visibility — publish or unlist the public `/c/` page |
 | `#primary` | Primary organization — which company they're mainly building |
 
+The evidence and diligence sections moved to their own pages (below, IA-1). The old
+`/company#metrics`, `/company#documents`, `/company#dataroom`, and `/company#legal` links
+**keep working forever** — they forward — but hand out the new ones.
+
 There is deliberately **no fragment for creating a company**. Creating or claiming one is a
 paid, consequential act — let them arrive at it themselves, don't deep-link them into it.
+
+## The Data Room and Due Diligence — every section is its own PAGE
+
+Since 2026-07-16 these sections are real pages — **hand out the page URL, no fragment
+needed**. The old fragment forms (`/dataroom#metrics`, `/diligence#legal`, …) keep
+working forever — they redirect to the page — but the clean URLs below are canonical.
+
+| Page | What's there |
+|---|---|
+| `https://fons.vc/dataroom/metrics` | Key Metrics — the numbers, and the connectors that verify them |
+| `https://fons.vc/dataroom/documents` | Documents — the diligence document slots (**upload is browser-only**) |
+| `https://fons.vc/diligence/preparation` | Preparation — the investor-question checklist (Must/Should/Could gap map). Link it for "what's missing before I approach investors". (Old `/diligence/readiness` URL 301s here forever) |
+| `https://fons.vc/diligence/legal` | Legal & admin — entity, company number, incorporation, accreditations |
+| `https://fons.vc/diligence/capital` | Capital / Raising — raise status + target investors (a signal only, never amounts or terms) |
+| `https://fons.vc/diligence/market` | Market & positioning — TAM/SAM/SOM with method, competition & moat, team & fit |
+| `https://fons.vc/diligence/references` | Customer references — consenting customers who'll confirm they're buying |
+| `https://fons.vc/messages/requests` | Investor requests — what vetted investors asked the data room for (moved under Messages) |
+| `https://fons.vc/insights/profile` | Profile insights — views + interactions on the public profile |
+| `https://fons.vc/insights/company` | Company insights — vetted investor views of the company page |
 
 ## `https://fons.vc/product` — the product page behind `/p/<slug>`
 

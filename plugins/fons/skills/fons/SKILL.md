@@ -130,6 +130,9 @@ Quick orientation — the tools:
 | `get_feed` / `post_feed_note` | The append-only audit feed; post permanent dated notes |
 | `list_company_connections` / `sync_company_connection` / `connect_company_source` | Company data sources (Stripe, Search Console…) — status, re-sync, and browser-link connect |
 | `list_connections` / `connect_account` / `disconnect_account` | Verified ✓ account connections (browser link flow) |
+| `search_profiles` | Find members by open_to / sectors / location — public cards + profile URLs only |
+| `get_member_availability` / `get_availability` | Offered call slots (working hours ∩ live free/busy) — theirs (opt-in only, mutual when both connected) and your own |
+| `request_call` / `list_call_invites` / `cancel_call_invite` | Fons-relayed call invites — no contact details exchanged; recipient responds on fons.vc; `.ics` on accept |
 
 ## When it happens on the website, send them to the exact control
 
@@ -151,7 +154,7 @@ fons.vc/profile" is a shrug.
 | Change their handle (Pro) | `https://fons.vc/profile#handle` |
 | Publish / hide their profile | `https://fons.vc/profile#visibility` |
 | Verify an account (LinkedIn, GitHub…) | `https://fons.vc/profile#connections` |
-| Upload a data-room document | `https://fons.vc/company#documents` |
+| Upload a data-room document | `https://fons.vc/dataroom/documents` |
 | Invite a teammate / manage the team | `https://fons.vc/company#team` |
 | Connect a data source (Stripe…) | `https://fons.vc/company#connections` |
 | Publish the company page | `https://fons.vc/company#visibility` |

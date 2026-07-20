@@ -71,13 +71,16 @@ from `founder` (self-entered) ones. Record and edit metrics with
 `update_metric`; connect new sources (Stripe, Search Console, ChartMogul,
 UKRI…) via `connect_company_source` — it hands back a browser link, and keys
 never go through the chat. Document upload stays in the browser —
-https://fons.vc/company#documents opens the data room on the slots.
+https://fons.vc/dataroom/documents opens the Data Room's Documents page.
 
 ## "What's my score?"
 
 There isn't one to show — by design. Fons shows founders what evidence is
 captured, unclear, or missing (the readiness checklist), and shows investors
 qualitative signal. Run the readiness flow instead; never fabricate a number.
+On the website the checklist lives at https://fons.vc/diligence/preparation (the
+Due Diligence → Preparation page; the old /diligence/readiness URL redirects
+there), alongside the legal/capital facts.
 
 ## Reading OTHER companies (research, due diligence)
 
@@ -91,3 +94,26 @@ the agent-readable twin directly — no auth needed:
 What's not in the public twin is deliberately gated (private fields, the deeper
 evidence layer for vetted investors) — don't try to reach it through the user's
 account.
+
+## "Find someone and book a call" (the network loop)
+
+The one flow that crosses member boundaries — Fons stays the middleman throughout
+(no email addresses or calendars are ever exchanged; consent gates every step).
+
+1. `search_profiles` with the user's criteria (`open_to: ["intro-calls"]` plus
+   sectors/location/q as discussed). Hand back the `profile_url`s — the human
+   reads the profiles and picks; never pick for them.
+2. `get_member_availability` for the chosen handle. If it returns slots, they're
+   bookable now (and mutual when the user's own calendar is connected — suggest
+   https://fons.vc/calendar if it isn't). If the member has no calendar, agree
+   times with the user and propose blind — the member can counter.
+3. `request_call` with 1–5 chosen slots and a short message saying why the call.
+   A 409 means a calendar conflict — relay the alternatives it returns.
+4. The recipient responds on fons.vc. Track with `list_call_invites`; once
+   `accepted`, the invite carries the confirmed slot, the meeting-venue link, and
+   the `.ics` — both sides add it to their calendars and simply turn up.
+
+Etiquette an agent must keep: respect a refusal (declines carry a cooldown you
+cannot bypass — don't retry, don't work around a block you can't see); don't
+burst-send (caps are server-enforced: Free 4/month, Plus 20/month, Investor
+uncapped); the message should say why THIS member, not paste a pitch.
