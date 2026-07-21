@@ -44,10 +44,21 @@ one — reconnecting the MCP server re-runs the OAuth consent.
   accepted — write what the person actually says, don't force it into tech terms.
 - `open_to` — what the person is open to: `looking-for-work`, `hiring`, `raising`,
   `investing`, `co-founder`, `advising`, `mentoring`, `looking-for-mentor`,
-  `freelance`, `board-roles`, `speaking`, `intro-calls`. This drives discovery
-  (investors, recruiters and coaches filter on it) — worth setting. `intro-calls`
-  is also the OPT-IN for receiving call invites: only a public profile carrying it
-  can be found by `search_profiles` filters and invited with `request_call`.
+  `freelance`, `board-roles`, `speaking`. This drives discovery (investors,
+  recruiters and coaches filter on it) — worth setting. **`intro-calls` is no
+  longer an `open_to` value** (it was until 2026-07-21): whether someone accepts
+  call requests is now the separate `call_access` field below.
+- `call_access` — WHO may request a call with this member. A permission, kept
+  deliberately separate from `visibility` (who can SEE the profile) and from
+  `open_to` (what they want). Values:
+  - `open` — anyone on Fons. **This is the default**: a public profile is
+    contactable, so assume most members are.
+  - `investors` — only members holding an active Fons investor seat.
+  - `closed` — nobody. The member stays findable in search; they just can't be
+    booked.
+  Contact never leaves Fons in any state: no email address or other contact
+  detail is exchanged, the recipient answers in their own workspace, and
+  declining or blocking is one action.
 - `field_visibility` — per-field privacy. Today only `cv` is toggleable.
 - `visibility` — whole-profile: `public` | `unlisted` | `private`. New accounts are
   **private by default**; a founder who wants to be found must set `public`. Flag
@@ -237,13 +248,17 @@ Verified ✓ connections: `linkedin`, `github`, `x`, `twitch`, `discord`, `youtu
 
 Search public, **listed** member profiles by the closed-vocabulary fields. Filters
 (all optional, AND-combined): `q` (name/headline free text), `open_to` (values from
-the list above, e.g. `["intro-calls"]`, `["raising"]`), `sectors` (directory sector
-slugs), `location` (substring), `limit` (default 20, cap 50).
+the list above, e.g. `["raising"]`; the legacy value `["intro-calls"]` is still
+accepted and now filters to members whose `call_access` is not `closed`),
+`sectors` (directory sector slugs), `location` (substring), `limit` (default 20,
+cap 50).
 
 Each result is the public card — `name`, `handle`, `headline`, `location`,
-`open_to`, `sectors`, `skills` — plus `profile_url` (`https://fons.vc/<handle>`)
-and `profile_md` (the agent-readable twin). `invitable: true` means the member has
-opted into intro calls and can be invited with `request_call`. Private/unlisted
+`open_to`, `sectors`, `skills`, `call_access` — plus `profile_url`
+(`https://fons.vc/<handle>`) and `profile_md` (the agent-readable twin).
+`invitable: true` answers "can **you** book this person" — it accounts for the
+member's `call_access` AND your own investor seat, so trust it over reading
+`call_access` yourself. Private/unlisted
 profiles never appear; no contact details, no scoring data. The intended loop:
 search → hand the human the profile URLs → they pick → `get_member_availability`
 → `request_call`.
@@ -252,7 +267,8 @@ search → hand the human the profile URLs → they pick → `get_member_availab
 
 - `get_member_availability` (`handle`, optional `days` ≤21): another member's
   **offered slots** — their working hours ∩ live calendar free/busy, as bookable
-  30-minute `{start,end}` times. Opt-in only (`intro-calls`); raw busy patterns
+  30-minute `{start,end}` times. Only for members whose `call_access` permits
+  you (check `invitable` from `search_profiles`); raw busy patterns
   and event contents are never exposed. When the CALLER's own calendar is
   connected the slots are the **mutual intersection** (`mutual: true`) — any of
   them works for both sides. A member with no calendar connected returns

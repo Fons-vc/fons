@@ -111,6 +111,8 @@ async function cmdProfileGet(args) {
   line("sectors", p.sectors);   // closed vocab, ≤3 (0157)
   line("skills", p.skills);     // open vocab, ≤12 (0157)
   line("open to", p.open_to);
+  // call_access (0162) — WHO may request a call. A permission, not a status.
+  line("call requests", p.call_access || "open");
   // the headline status (0154/0156) — promoted action, freehand note, or both
   line("status", p.primary_status ? p.primary_status + (p.status_note ? ` — ${p.status_note}` : "") : (p.status_note || ""));
   // Display links: "label: url — description" (description optional, 0150 era).
@@ -147,6 +149,8 @@ async function cmdProfileSet(args) {
   if (args.sector !== undefined) patch.sectors = arr(args.sector);   // ≤3 directory sector slugs
   if (args.skill !== undefined) patch.skills = arr(args.skill);      // ≤12 free-text skills
   if (args["open-to"] !== undefined) patch.open_to = arr(args["open-to"]);
+  // Who may request a call with you: open | investors | closed (0162).
+  if (typeof args["call-access"] === "string") patch.call_access = args["call-access"];
   // The headline status (0154): one open_to value promoted to the top of the page;
   // "" clears it. Server-coerced to null unless it's in the open_to list.
   if (typeof args.status === "string") patch.primary_status = args.status;
@@ -159,7 +163,7 @@ async function cmdProfileSet(args) {
   if (args["certifications-json"] !== undefined) patch.certifications = parseJsonFlag(args["certifications-json"], "--certifications-json");
   if (args["field-visibility-json"] !== undefined) patch.field_visibility = parseJsonFlag(args["field-visibility-json"], "--field-visibility-json");
   if (!Object.keys(patch).length) {
-    fail("nothing to set. Try --headline, --bio, --location, --name, --linkedin, --youtube, --visibility, --sector, --skill, --open-to, or a --*-json flag (see `fons help`).");
+    fail("nothing to set. Try --headline, --bio, --location, --name, --linkedin, --youtube, --visibility, --call-access, --sector, --skill, --open-to, or a --*-json flag (see `fons help`).");
   }
   await apiFetch("/api/v1/profile", { method: "PATCH", body: patch });
   process.stdout.write(`Updated: ${Object.keys(patch).join(", ")}.\n`);
@@ -542,7 +546,10 @@ async function cmdSearch(args) {
   if (!rows.length) { process.stdout.write("No members matched — loosen the filters.\n"); return; }
   for (const p of rows) {
     const bits = [p.headline, p.location, (p.open_to || []).join(", ")].filter(Boolean).join(" · ");
-    process.stdout.write(`@${p.handle}  ${p.name}${p.invitable ? "  [invitable]" : ""}\n`);
+    // invitable is computed FOR YOU (an 'investors' member is invitable only by
+    // a seated investor); call_access is the member's raw setting.
+    const access = p.call_access && p.call_access !== "open" ? `  [calls: ${p.call_access}]` : "";
+    process.stdout.write(`@${p.handle}  ${p.name}${p.invitable ? "  [invitable]" : ""}${access}\n`);
     if (bits) process.stdout.write(`  ${bits}\n`);
     process.stdout.write(`  ${p.profile_url}\n`);
   }
@@ -599,7 +606,7 @@ async function cmdCallList(args) {
   const data = await apiFetch(`/api/v1/calls?direction=${encodeURIComponent(dir)}`);
   if (args.json) { process.stdout.write(JSON.stringify(data, null, 2) + "\n"); return; }
   const rows = data.invites || [];
-  if (!rows.length) { process.stdout.write("No call invites yet — `fons search --open-to intro-calls` to find members.\n"); return; }
+  if (!rows.length) { process.stdout.write("No call invites yet — `fons search` to find members (most are contactable by default).\n"); return; }
   for (const i of rows) {
     const other = `${i.counterparty.name}${i.counterparty.handle ? ` (@${i.counterparty.handle})` : ""}`;
     process.stdout.write(`${i.id}  ${i.direction === "sent" ? "→" : "←"} ${other}  [${i.status}]\n`);
@@ -637,6 +644,8 @@ Usage:
       --skill <s>      (repeat, max 12 — free text, e.g. "Product management")
       --open-to <o>    (repeat: looking-for-work|hiring|raising|investing|co-founder|advising|
                         mentoring|looking-for-mentor|freelance|board-roles|speaking)
+      --call-access <a>  who may request a call with you: open|investors|closed (default open —
+                         a public profile is contactable; contact never leaves Fons)
       --status <o>       the ONE open-to value shown as the headline status at the top of the page ("" clears)
       --status-note <s>  one-line status in your own words (max 80 chars) — works with --status or alone
       --current-role-json '[{"title":"Founder","company":"Acme","start":"2024-01"}]'
@@ -686,10 +695,12 @@ Usage:
       providers: linkedin, github, x, twitch, discord, youtube
       (disconnect: youtube is managed on fons.vc)
   fons search [<q>] [flags]          Find members (public, listed profiles only):
-      --open-to <o>    (repeat — e.g. intro-calls, raising, investing)
+      --open-to <o>    (repeat — e.g. raising, investing; legacy "intro-calls"
+                        still works and filters to members who accept call requests)
       --sector <s>     (repeat — directory sector slugs)
       --location <s>   --limit <n>   --json
-  fons availability <handle>         A member's offered call slots (opt-in only;
+  fons availability <handle>         A member's offered call slots (if their call_access
+                                     permits you;
       [--days <n>]                    mutual intersection when your calendar is connected)
   fons calendar [--days <n>]         Your own calendar state + offered slots
                                      (connect/settings live at fons.vc/calendar/settings)

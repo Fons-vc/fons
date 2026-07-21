@@ -100,10 +100,14 @@ account.
 The one flow that crosses member boundaries — Fons stays the middleman throughout
 (no email addresses or calendars are ever exchanged; consent gates every step).
 
-1. `search_profiles` with the user's criteria (`open_to: ["intro-calls"]` plus
-   sectors/location/q as discussed). Hand back the `profile_url`s — the human
-   reads the profiles and picks; never pick for them.
-2. `get_member_availability` for the chosen handle. If it returns slots, they're
+1. `search_profiles` with the user's criteria (sectors/location/q as discussed).
+   Hand back the `profile_url`s — the human reads the profiles and picks; never
+   pick for them. Most members are contactable (`call_access` defaults to
+   `open`); trust each result's `invitable` flag, which already accounts for the
+   member's setting and the user's own investor seat.
+2. `get_member_availability` for the chosen handle. If it refuses, the member's
+   `call_access` doesn't permit this user (`investors` needs an active investor
+   seat; `closed` means nobody) — say so plainly and stop; there is no way round it. If it returns slots, they're
    bookable now (and mutual when the user's own calendar is connected — suggest
    https://fons.vc/calendar/settings if it isn't). If the member has no calendar, agree
    times with the user and propose blind — the member can counter.
